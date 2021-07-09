@@ -8,5 +8,11 @@ package com.cinnabar.client.config.handelException;
  * @createTime 2020-11-18  17:26:00
  */
 public class CommonException extends Exception {
+    public CommonException(String message) {
+        super(message);
+    }
 
+    public CommonException() {
+        super();
+    }
 }

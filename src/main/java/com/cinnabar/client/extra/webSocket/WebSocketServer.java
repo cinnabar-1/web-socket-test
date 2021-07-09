@@ -2,15 +2,23 @@ package com.cinnabar.client.extra.webSocket;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.cinnabar.client.beans.Message;
+import com.cinnabar.client.config.redisHelper.RedisHelper;
+import com.cinnabar.client.service.MessageService;
+import io.swagger.models.auth.In;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
+import javax.annotation.Resource;
 import javax.websocket.*;
 import javax.websocket.server.PathParam;
 import javax.websocket.server.ServerEndpoint;
 import java.io.IOException;
+import java.util.Date;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -30,6 +38,9 @@ public class WebSocketServer {
      * 静态变量，用来记录当前在线连接数。应该把它设计成线程安全的。
      */
     private static volatile int onlineCount = 0;
+
+    @Resource
+    MessageService messageService;
 
     private static volatile int online;
     /**
@@ -107,10 +118,17 @@ public class WebSocketServer {
                     webSocketMap.get(toUserId).sendMessage(jsonObject.toJSONString());
                 } else {
                     String errMessage = "用户[" + toUserId + "]不在线，在线时会将信息发送";
-                    log.error(errMessage);
+                    log.info(errMessage);
                     this.session.getBasicRemote().sendText(errMessage);
                     //否则不在这个服务器上，发送到mysql或者redis
-
+                    // 先存redis，最后一起存数据库
+                    List<Message> messages = new LinkedList<>();
+                    Message messageEntity = new Message();
+                    messageEntity.setDateTime(new Date());
+                    messageEntity.setMessage(message);
+                    messageEntity.setUserId(Integer.valueOf(this.userId));
+                    messages.add(messageEntity);
+                    messageService.saveDelayMessage(messages);
                 }
             } catch (Exception e) {
                 e.printStackTrace();

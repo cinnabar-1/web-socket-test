@@ -8,6 +8,7 @@ import com.cinnabar.client.config.authToken.Md5TokenGenerator;
 import com.cinnabar.client.config.handelResponse.ResponseCtrl;
 import com.cinnabar.client.config.handelResponse.ResponseTemplate;
 import com.cinnabar.client.mapper.UserMapper;
+import com.cinnabar.client.service.UserService;
 import io.swagger.annotations.ApiOperation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,6 +28,9 @@ public class AuthController {
     @Autowired
     private UserMapper userMapper;
 
+    @Autowired
+    private UserService userService;
+
     @GetMapping("/welcome")
     public String Welcome() {
 
@@ -39,12 +43,9 @@ public class AuthController {
     public ResponseCtrl.Template Login(String account, String password) {
         return ResponseCtrl.in(result -> {
             logger.info("用户名username为:" + account + "密码password为:" + password);
-            User user = userMapper.getByUserAccount(account); // todo 数据库查询
-//            User user = new User();
+            User user = userMapper.getByUserAccount(account);
             logger.info("从数据库查出来的用户user为:" + user);
-
             JSONObject obj = new JSONObject();
-
             if (user != null && user.getPassword().equals(password)) {
                 String token = SetRedisData(user.getAccount(), user.getPassword());
                 obj.put("message", "用户登录成功");
@@ -68,7 +69,7 @@ public class AuthController {
     @ApiOperation(value = "signIn")
     @PostMapping("/signIn")
     public ResponseCtrl.Template sign(@RequestBody List<User> users) {
-        return ResponseCtrl.in(r -> userMapper.insertIntoUser(users));
+        return ResponseCtrl.in(r -> userService.insertUser(users));
     }
 
     /**

@@ -12,5 +12,5 @@ import java.util.List;
  * @createTime 2021-07-08  13:24:00
  */
 public interface UserService {
-    Integer insertUser(List<User> users);
+    List<User> insertUser(List<User> users);
 }

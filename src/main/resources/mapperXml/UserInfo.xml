@@ -28,6 +28,9 @@
 
     <select id="DuplicateUser" resultType="com.cinnabar.client.beans.User">
         select * from user_info where account in
+        <foreach collection="list" item="account" separator="," open="(" close=")">
+            #{account}
+        </foreach>
     </select>
 
 </mapper>
