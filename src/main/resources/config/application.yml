@@ -1,0 +1,16 @@
+spring:
+  profiles:
+    active: nodiscovery
+  application:
+    name: client
+
+mybatis:
+  type-aliases-package: com.cinnabar.client.beans
+  mapperPackage: com.cinnabar.client.mapper
+  mapper-locations: classpath:mapperXml/*.xml
+
+logging:
+  level:
+    root: info
+    org.springframework: warn
+    com.cinnabar.client.mapper: debug

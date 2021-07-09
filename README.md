@@ -1,1 +1,1 @@
-# web-socket-test
+# eureka-client
