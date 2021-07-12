@@ -4,6 +4,7 @@ import com.cinnabar.client.beans.User;
 import com.cinnabar.client.config.Logback;
 import com.cinnabar.client.config.authToken.AuthToken;
 import com.cinnabar.client.config.handelResponse.ResponseCtrl;
+import com.cinnabar.client.config.redisHelper.RedisHelper;
 import com.cinnabar.client.mapper.UserMapper;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -22,6 +23,9 @@ public class ProviderController {
 
     @Autowired
     Logback logback;
+
+    @Autowired
+    RedisHelper redisHelper;
 
     @ApiOperation(value = "return a url parameter")
     @PostMapping(value = "/{name}")
