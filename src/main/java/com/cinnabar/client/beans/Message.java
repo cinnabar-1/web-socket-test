@@ -13,8 +13,8 @@ import java.util.Date;
  */
 @Data
 public class Message {
-    Integer userId;
+    String userId;
     String message;
-    Date dateTime;
-    Integer toUserId;
+    String dateTime;
+    String toUserId;
 }

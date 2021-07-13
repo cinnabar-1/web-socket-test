@@ -5,9 +5,9 @@ import com.google.common.collect.Lists;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import redis.clients.jedis.Response;
 
-import java.util.Arrays;
-import java.util.Collections;
+import java.util.*;
 
 /**
  * @author cinnabar-1
@@ -21,16 +21,21 @@ import java.util.Collections;
 //@WebAppConfiguration
 class RedisHelperTest {
 
-    @Autowired
-    RedisHelper redisHelper;
+//    @Autowired
+//    RedisHelper redisHelper;
 
     @Test
     void setKeyValue() throws CommonException {
         String key = "test001";
         String value = "test001";
-        redisHelper.pipSetKeyValue(key, value, 60);
-        redisHelper.get(key);
-        redisHelper.getValue(Collections.singletonList(key));
+        RedisHelper.set(key, value, 60);
+        RedisHelper.set(key, "123", 60);
+        System.out.println(RedisHelper.get(key));
+        Map<String, Response<String>> map = RedisHelper.pipGetValue(Collections.singletonList(key));
+        for (String s :
+                map.keySet()) {
+            System.out.println(map.get(s).get());
+        }
     }
 
     @Test

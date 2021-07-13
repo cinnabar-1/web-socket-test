@@ -14,4 +14,8 @@ import java.util.List;
  */
 public interface MessageService {
     Integer saveDelayMessage(List<Message> messages);
+
+    List<Message> getDelayMessage(String toUserId);
+
+    void deleteDelayMessage(String toUserId);
 }

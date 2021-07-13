@@ -1,11 +1,16 @@
 package com.cinnabar.client.config.redisHelper;
 
 import com.cinnabar.client.config.handelException.CommonException;
+import lombok.Data;
+import lombok.Getter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import redis.clients.jedis.*;
 
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -18,12 +23,25 @@ import java.util.Map;
  */
 @Component
 public class RedisHelper {
-    // Redis服务器IP
+
+    Logger log = LoggerFactory.getLogger(RedisHelper.class);
+
     @Value(value = "${spring.redis.host}")
-    private String ADDR;
-    // Redis的端口号
+    public void setADDR(String ADDR) {
+        this.ADDR = ADDR;
+    }
+
     @Value(value = "${spring.redis.port}")
-    private int PORT;
+    public void setPORT(int PORT) {
+        this.PORT = PORT;
+    }
+
+    // Redis服务器IP
+    @Getter
+    private static String ADDR;
+    // Redis的端口号
+    @Getter
+    private static int PORT;
     // 可用连接实例的最大数目，默认值为8；
     // 如果赋值为-1，则表示不限制；如果pool已经分配了maxActive个jedis实例，则此时pool的状态为exhausted(耗尽)。
     private static int MAX_ACTIVE = 16;
@@ -31,15 +49,15 @@ public class RedisHelper {
     private static int MAX_IDLE = 6;
     // 等待可用连接的最大时间，单位毫秒，默认值为-1，表示永不超时。如果超过等待时间，则直接抛出JedisConnectionException；
     private static int MAX_WAIT = 10000;
-
     // 在borrow一个jedis实例时，是否提前进行validate操作；如果为true，则得到的jedis实例均是可用的；
     private static boolean TEST_ON_BORROW = true;
+
     private static JedisPool jedisPool = null;
 
     /*
      * 初始化Redis连接池
      */
-    private void init() {
+    private static void init() {
         try {
             JedisPoolConfig config = new JedisPoolConfig();
             config.setMaxTotal(MAX_ACTIVE);
@@ -57,7 +75,7 @@ public class RedisHelper {
      *
      * @return Jedis
      */
-    public synchronized Jedis getJedis() {
+    public static synchronized Jedis getJedis() {
         try {
             if (jedisPool != null) {
                 return jedisPool.getResource();
@@ -71,33 +89,35 @@ public class RedisHelper {
         }
     }
 
-    public void pipSetKeyValue(String key, String value, int expiredTime) throws CommonException {
-        Jedis jedis = getJedis();
-        if (jedis != null) {
-            jedis.flushDB();
-            Pipeline pip = jedis.pipelined();
-            pip.set(key, value);
-            if (expiredTime > 0)
-                pip.expire(key, expiredTime);
-            pip.sync();// 同步获取所有的回应
-        } else {
-            throw new CommonException("redis init failed");
-        }
-    }
-
-    void setKeyValue(String key, String value) throws CommonException {
-        pipSetKeyValue(key, value, -1);
-    }
-
-    public String get(String key) {
+    public static String get(String key) {
         return getJedis().get(key);
     }
 
-    public Map getValue(List<String> keys) throws CommonException {
+    public static void set(String key, String value) {
+        set(key, value, -1);
+    }
+
+    public static void set(String key, String value, int expiredTime) {
+        Jedis jedis = getJedis();
+        if (expiredTime < 1) {
+            jedis.set(key, value);
+        } else {
+            jedis.set(key, value);
+            jedis.expire(key, expiredTime);
+        }
+        jedis.close();
+    }
+
+    public static void expire(String key, int expiredTime) {
+        Jedis jedis = getJedis();
+        jedis.expire(key, expiredTime);
+        jedis.close();
+    }
+
+    public static Map<String, Response<String>> pipGetValue(List<String> keys) throws CommonException {
         Jedis jedis = getJedis();
         Map<String, Response<String>> redisValueMap = new HashMap<>();
         if (jedis != null) {
-            jedis.flushDB();
             Pipeline pip = jedis.pipelined();
             for (String key :
                     keys) {
@@ -108,6 +128,52 @@ public class RedisHelper {
             return redisValueMap;
         } else {
             throw new CommonException("redis init failed");
+        }
+    }
+
+    public static void pipSetKeyValue(List<HelperSet> sets) throws CommonException {
+        Jedis jedis = getJedis();
+        if (jedis != null) {
+            // 清除所有key
+//            jedis.flushDB();
+            Pipeline pip = jedis.pipelined();
+            for (HelperSet set :
+                    sets) {
+                pip.set(set.getKey(), set.getValue());
+                if (set.getExpiredTime() > 0)
+                    pip.expire(set.getKey(), set.getExpiredTime());
+            }
+            pip.sync();// 同步获取所有的回应
+        } else {
+            throw new CommonException("redis init failed");
+        }
+    }
+
+    public static void pipSetKeyValue(Map<String, String> map) throws CommonException {
+        List<HelperSet> helperSets = new LinkedList<>();
+        for (String key :
+                map.keySet()) {
+            HelperSet helperSet = new HelperSet();
+            helperSet.setKey(key);
+            helperSet.setValue(map.get(key));
+            helperSets.add(helperSet);
+        }
+        pipSetKeyValue(helperSets);
+    }
+
+    @Data
+    public static class HelperSet {
+        String key;
+        String value;
+        int expiredTime;
+
+        public HelperSet() {
+        }
+
+        public HelperSet(String key, String value, int expiredTime) {
+            this.key = key;
+            this.value = value;
+            this.expiredTime = expiredTime;
         }
     }
 }

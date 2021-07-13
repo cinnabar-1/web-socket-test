@@ -3,19 +3,19 @@ package com.cinnabar.client.extra.webSocket;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.cinnabar.client.beans.Message;
-import com.cinnabar.client.config.redisHelper.RedisHelper;
+import com.cinnabar.client.common.util.SpringBeans;
 import com.cinnabar.client.service.MessageService;
-import io.swagger.models.auth.In;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
-import javax.annotation.Resource;
 import javax.websocket.*;
 import javax.websocket.server.PathParam;
 import javax.websocket.server.ServerEndpoint;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
@@ -39,8 +39,7 @@ public class WebSocketServer {
      */
     private static volatile int onlineCount = 0;
 
-    @Resource
-    MessageService messageService;
+    private MessageService messageService = SpringBeans.getBean(MessageService.class);
 
     private static volatile int online;
     /**
@@ -73,11 +72,12 @@ public class WebSocketServer {
             addOnlineCount();
             //在线数加1
         }
-
         log.info("用户连接:" + userId + ",当前在线人数为:" + getOnlineCount());
-
         try {
+            List<Message> delayMessage = messageService.getDelayMessage(userId);
             sendMessage("连接成功");
+            sendMessage(JSONObject.toJSONString(delayMessage));
+            messageService.deleteDelayMessage(userId);
         } catch (IOException e) {
             log.error("用户:" + userId + ",网络异常!!!!!!");
         }
@@ -124,11 +124,14 @@ public class WebSocketServer {
                     // 先存redis，最后一起存数据库
                     List<Message> messages = new LinkedList<>();
                     Message messageEntity = new Message();
-                    messageEntity.setDateTime(new Date());
+                    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yy-MM-dd HH:mm:ss");
+                    messageEntity.setDateTime(simpleDateFormat.format(new Date()));
                     messageEntity.setMessage(message);
-                    messageEntity.setUserId(Integer.valueOf(this.userId));
+                    messageEntity.setUserId(this.userId);
+                    messageEntity.setToUserId(toUserId);
                     messages.add(messageEntity);
                     messageService.saveDelayMessage(messages);
+
                 }
             } catch (Exception e) {
                 e.printStackTrace();

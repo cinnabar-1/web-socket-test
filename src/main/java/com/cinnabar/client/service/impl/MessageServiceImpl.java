@@ -26,4 +26,14 @@ public class MessageServiceImpl implements MessageService {
     public Integer saveDelayMessage(List<Message> messages) {
         return messageMapper.saveMessage(messages);
     }
+
+    @Override
+    public List<Message> getDelayMessage(String toUserId) {
+        return messageMapper.getDelayMessage(toUserId);
+    }
+
+    @Override
+    public void deleteDelayMessage(String toUserId) {
+        messageMapper.deleteDelayMessage(toUserId);
+    }
 }

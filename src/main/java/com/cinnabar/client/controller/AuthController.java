@@ -5,8 +5,10 @@ import com.cinnabar.client.beans.User;
 import com.cinnabar.client.config.authToken.AuthToken;
 import com.cinnabar.client.config.CommonStatic;
 import com.cinnabar.client.config.authToken.Md5TokenGenerator;
+import com.cinnabar.client.config.handelException.CommonException;
 import com.cinnabar.client.config.handelResponse.ResponseCtrl;
 import com.cinnabar.client.config.handelResponse.ResponseTemplate;
+import com.cinnabar.client.config.redisHelper.RedisHelper;
 import com.cinnabar.client.mapper.UserMapper;
 import com.cinnabar.client.service.UserService;
 import io.swagger.annotations.ApiOperation;
@@ -16,7 +18,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import redis.clients.jedis.Jedis;
 
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 @RestController()
 public class AuthController {
@@ -33,7 +37,6 @@ public class AuthController {
 
     @GetMapping("/welcome")
     public String Welcome() {
-
         return "welcome TokenController ";
     }
 
@@ -57,12 +60,11 @@ public class AuthController {
         });
     }
 
-    @RequestMapping(value = "test", method = RequestMethod.GET)
+    @RequestMapping(value = "/test", method = RequestMethod.GET)
     @AuthToken
     @ApiOperation(value = "测试")
     public ResponseTemplate test() {
         logger.info("**************测试start**************");
-
         return ResponseTemplate.builder().code(200).message("测试成功").data("测试数据").build();
     }
 
@@ -82,20 +84,16 @@ public class AuthController {
      * @Description:
      * @author
      */
-    private String SetRedisData(String account, String password) {
-        //此处主要设置redis的ip和端口号
-        Jedis jedis = new Jedis("127.0.0.1", 6379);
+    private String SetRedisData(String account, String password) throws CommonException {
         String token = tokenGenerator.generate(account, password);
-        jedis.set(account, token);
-        //设置key过期时间，到期会自动删除
-        jedis.expire(account, CommonStatic.TOKEN_EXPIRE_TIME);
+        // 将老的token key移除
+        RedisHelper.getJedis().del(RedisHelper.get(account));
+        List<RedisHelper.HelperSet> helperSets = new LinkedList<>();
         //将token和username以键值对的形式存入到redis中进行双向绑定
-        jedis.set(token, account);
-        jedis.expire(token, CommonStatic.TOKEN_EXPIRE_TIME);
-        long currentTime = System.currentTimeMillis();
-        jedis.set(token + account, Long.toString(currentTime));
-        //用完关闭
-        jedis.close();
+        //设置key过期时间，到期会自动删除
+        helperSets.add(new RedisHelper.HelperSet(account, token, CommonStatic.TOKEN_EXPIRE_TIME));
+        helperSets.add(new RedisHelper.HelperSet(token, account, CommonStatic.TOKEN_EXPIRE_TIME));
+        RedisHelper.pipSetKeyValue(helperSets);
         return token;
     }
 }
