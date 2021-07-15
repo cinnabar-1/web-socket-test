@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="ts">
+<head>
+    <meta charset="utf-8">
+    <title>login</title>
+</head>
+<script type="text/javascript" src="http_util.js"></script>
+<script type="text/javascript" src="http_url.js"></script>
+<script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+<script>
+    function jump() {
+        let account = $("#account").val();
+        let password = document.getElementById('password').value;
+
+
+        let request = httpUrls.login(account, password);
+        httpUtils.get(request).then(data => {
+            console.log(data.code);
+            currentToken = data.data.token;
+            console.log(data.data.token);
+        });
+        // debugger
+        window.location.href = 'websocket.html?';
+    }
+</script>
+<body>
+<label for="account">account &nbsp;&nbsp;&nbsp;</label><input id="account" content="account">
+<p></p>
+<label for="password">password </label><input id="password" content="password">
+<p></p>
+<button id="load" onclick="jump()">登录</button>
+</body>
+</html>

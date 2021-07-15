@@ -67,33 +67,34 @@ public class TokenInterceptor implements HandlerInterceptor {
             if (account != null && !account.trim().equals("")) {
                 RedisHelper.expire(account, CommonStatic.TOKEN_EXPIRE_TIME);
                 RedisHelper.expire(token, CommonStatic.TOKEN_EXPIRE_TIME);
-            }
-            request.setAttribute(USER_KEY, account);
-            return true;
-        } else {
-            JSONObject jsonObject = new JSONObject();
 
-            PrintWriter out = null;
-            try {
-                response.setStatus(unauthorizedErrorCode);
-                response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+                request.setAttribute(USER_KEY, account);
+                return true;
+            } else {
+                JSONObject jsonObject = new JSONObject();
 
-                jsonObject.put("code", ((HttpServletResponse) response).getStatus());
-                //鉴权失败后返回的错误信息，默认为401 unauthorized
-                jsonObject.put("message", HttpStatus.UNAUTHORIZED);
-                out = response.getWriter();
-                out.println(jsonObject);
+                PrintWriter out = null;
+                try {
+                    response.setStatus(unauthorizedErrorCode);
+                    response.setContentType(MediaType.APPLICATION_JSON_VALUE);
 
-                return false;
-            } catch (Exception e) {
-                e.printStackTrace();
-            } finally {
-                if (null != out) {
-                    out.flush();
-                    out.close();
+                    jsonObject.put("code", ((HttpServletResponse) response).getStatus());
+                    //鉴权失败后返回的错误信息，默认为401 unauthorized
+                    jsonObject.put("message", HttpStatus.UNAUTHORIZED);
+                    out = response.getWriter();
+                    out.println(jsonObject);
+
+                    return false;
+                } catch (Exception e) {
+                    e.printStackTrace();
+                } finally {
+                    if (null != out) {
+                        out.flush();
+                        out.close();
+                    }
                 }
-            }
 
+            }
         }
         request.setAttribute(USER_KEY, null);
         return true;

@@ -2,8 +2,8 @@ package com.cinnabar.client.controller;
 
 import com.alibaba.fastjson.JSONObject;
 import com.cinnabar.client.beans.User;
-import com.cinnabar.client.config.authToken.AuthToken;
 import com.cinnabar.client.config.CommonStatic;
+import com.cinnabar.client.config.authToken.AuthToken;
 import com.cinnabar.client.config.authToken.Md5TokenGenerator;
 import com.cinnabar.client.config.handelException.CommonException;
 import com.cinnabar.client.config.handelResponse.ResponseCtrl;
@@ -16,11 +16,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import redis.clients.jedis.Jedis;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
 @RestController()
 public class AuthController {
@@ -87,7 +85,9 @@ public class AuthController {
     private String SetRedisData(String account, String password) throws CommonException {
         String token = tokenGenerator.generate(account, password);
         // 将老的token key移除
-        RedisHelper.getJedis().del(RedisHelper.get(account));
+        String oldToken = RedisHelper.get(account);
+        if (oldToken != null)
+            RedisHelper.getJedis().del(oldToken);
         List<RedisHelper.HelperSet> helperSets = new LinkedList<>();
         //将token和username以键值对的形式存入到redis中进行双向绑定
         //设置key过期时间，到期会自动删除

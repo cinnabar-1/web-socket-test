@@ -76,7 +76,8 @@ public class WebSocketServer {
         try {
             List<Message> delayMessage = messageService.getDelayMessage(userId);
             sendMessage("连接成功");
-            sendMessage(JSONObject.toJSONString(delayMessage));
+            if (delayMessage.size() > 0)
+                sendMessage(JSONObject.toJSONString(delayMessage));
             messageService.deleteDelayMessage(userId);
         } catch (IOException e) {
             log.error("用户:" + userId + ",网络异常!!!!!!");
