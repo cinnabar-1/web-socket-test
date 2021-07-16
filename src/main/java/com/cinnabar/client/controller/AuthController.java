@@ -34,6 +34,7 @@ public class AuthController {
     private UserService userService;
 
     @GetMapping("/welcome")
+    @AuthToken
     public String Welcome() {
         return "welcome TokenController ";
     }
@@ -41,6 +42,7 @@ public class AuthController {
 
     @RequestMapping(value = "/login", method = RequestMethod.GET)
     @ApiOperation(value = "login")
+    @AuthToken
     public ResponseCtrl.Template Login(String account, String password) {
         return ResponseCtrl.in(result -> {
             logger.info("用户名username为:" + account + "密码password为:" + password);
@@ -59,7 +61,6 @@ public class AuthController {
     }
 
     @RequestMapping(value = "/test", method = RequestMethod.GET)
-    @AuthToken
     @ApiOperation(value = "测试")
     public ResponseTemplate test() {
         logger.info("**************测试start**************");
@@ -68,6 +69,7 @@ public class AuthController {
 
     @ApiOperation(value = "signIn")
     @PostMapping("/signIn")
+    @AuthToken
     public ResponseCtrl.Template sign(@RequestBody List<User> users) {
         return ResponseCtrl.in(r -> userService.insertUser(users));
     }

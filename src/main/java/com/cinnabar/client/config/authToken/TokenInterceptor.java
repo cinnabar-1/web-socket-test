@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
@@ -55,7 +56,8 @@ public class TokenInterceptor implements HandlerInterceptor {
         HandlerMethod handlerMethod = (HandlerMethod) handler;
         Method method = handlerMethod.getMethod();
         //验证token
-        if (method.getAnnotation(AuthToken.class) != null || handlerMethod.getBeanType().getAnnotation(AuthToken.class) != null) {
+        if (handlerMethod.getBeanType().getAnnotation(RestController.class) != null
+                && handlerMethod.getBeanType().getAnnotation(AuthToken.class) == null && method.getAnnotation(AuthToken.class) == null) {
             String token = request.getHeader(Authorization);
             log.info("获取到的token为: {} ", token);
             String account = null;

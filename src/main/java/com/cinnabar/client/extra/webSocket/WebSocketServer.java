@@ -4,7 +4,9 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.cinnabar.client.beans.Message;
 import com.cinnabar.client.common.util.SpringBeans;
+import com.cinnabar.client.config.redisHelper.RedisHelper;
 import com.cinnabar.client.service.MessageService;
+import org.apache.ibatis.annotations.Param;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,7 +31,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @createTime 2020-11-27  19:27:00
  */
 
-@ServerEndpoint("/socket/{userId}")
+@ServerEndpoint("/socket/{account}/{token}")
 @Component
 public class WebSocketServer {
 
@@ -54,33 +56,42 @@ public class WebSocketServer {
      * 接收userId
      */
     private String userId = "";
+    private String token = "";
 
     /**
      * 连接建立成功调用的方法
      */
     @OnOpen
-    public void onOpen(Session session, @PathParam("userId") String userId) {
-        this.session = session;
-        this.userId = userId;
-        if (webSocketMap.containsKey(userId)) {
-            webSocketMap.remove(userId);
-            webSocketMap.put(userId, this);
-            //加入set中
+    public void onOpen(Session session, @PathParam("account") String account, @PathParam("token") String token) {
+        if (account != null && account.equals(RedisHelper.get(token))) {
+            this.session = session;
+            this.userId = account;
+            if (webSocketMap.containsKey(userId)) {
+                webSocketMap.remove(userId);
+                webSocketMap.put(userId, this);
+                //加入set中
+            } else {
+                webSocketMap.put(userId, this);
+                //加入set中
+                addOnlineCount();
+                //在线数加1
+            }
+            log.info("用户连接:" + userId + ",当前在线人数为:" + getOnlineCount());
+            try {
+                List<Message> delayMessage = messageService.getDelayMessage(userId);
+                sendMessage("连接成功");
+                if (delayMessage.size() > 0)
+                    sendMessage(JSONObject.toJSONString(delayMessage));
+                messageService.deleteDelayMessage(userId);
+            } catch (IOException e) {
+                log.error("用户:" + userId + ",网络异常!!!!!!");
+            }
         } else {
-            webSocketMap.put(userId, this);
-            //加入set中
-            addOnlineCount();
-            //在线数加1
-        }
-        log.info("用户连接:" + userId + ",当前在线人数为:" + getOnlineCount());
-        try {
-            List<Message> delayMessage = messageService.getDelayMessage(userId);
-            sendMessage("连接成功");
-            if (delayMessage.size() > 0)
-                sendMessage(JSONObject.toJSONString(delayMessage));
-            messageService.deleteDelayMessage(userId);
-        } catch (IOException e) {
-            log.error("用户:" + userId + ",网络异常!!!!!!");
+            try {
+                session.getBasicRemote().sendText("{\"login\":\"need\"}");
+            } catch (IOException e) {
+                log.error("用户:" + userId + ",网络异常!!!!!!");
+            }
         }
     }
 
@@ -132,7 +143,6 @@ public class WebSocketServer {
                     messageEntity.setToUserId(toUserId);
                     messages.add(messageEntity);
                     messageService.saveDelayMessage(messages);
-
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -154,7 +164,8 @@ public class WebSocketServer {
      * 实现服务器主动推送
      */
     public void sendMessage(String message) throws IOException {
-        this.session.getBasicRemote().sendText(message);
+        String data = "{\"data\":\"" + message + "\"}";
+        this.session.getBasicRemote().sendText(data);
     }
 
 

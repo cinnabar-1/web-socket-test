@@ -8,7 +8,7 @@ function openSocket() {
         //实现化WebSocket对象，指定要连接的服务器地址与端口  建立连接
         //等同于socket = new WebSocket("ws://localhost:8888/xxxx/im/25");
         //var socketUrl="${request.contextPath}/im/"+$("#userId").val();
-        let socketUrl = "http://localhost:8080/socket/" + $("#userId").val();
+        let socketUrl = `http://localhost:8080/socket/${$("#account").val()}/${token}`;
         socketUrl = socketUrl.replace("https", "ws").replace("http", "ws");
         console.log(socketUrl);
         if (socket != null) {
@@ -37,7 +37,13 @@ function openSocket() {
         };
         // 收到消息 展示
         socket.onmessage = function (event) {
-            document.getElementById('message').innerHTML += event.data + '<br/>';
+            let result = jQuery.parseJSON(event.data);
+            if ("need" === result.login) {
+                document.getElementById('message').innerHTML += "please login first" + '<br/>';
+                closeSocket();
+                window.location.href = `index.html`;
+            } else
+                document.getElementById('message').innerHTML += event.data + '<br/>';
         }
     }
 }

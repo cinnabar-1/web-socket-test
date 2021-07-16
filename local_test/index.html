@@ -18,7 +18,9 @@
             console.log(data.code);
             currentToken = data.data.token;
             console.log(data.data.token);
-             window.location.href = `websocket.html?token=${currentToken}`;
+            window.location.href = `websocket.html?token=${currentToken}`;
+        }).catch(e => {
+            console.log(e)
         });
         // debugger
     }

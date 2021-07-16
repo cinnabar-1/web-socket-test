@@ -14,8 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @Api(tags = "用户接口", produces = MediaType.APPLICATION_JSON_VALUE)
-@RequestMapping("/user")
-@AuthToken
+@RequestMapping("/user/")
 public class ProviderController {
 
     @Autowired
@@ -43,8 +42,16 @@ public class ProviderController {
 
     @ApiOperation(value = "test")
     @RequestMapping(value = "/{account}", method = RequestMethod.GET)
-    public ResponseCtrl.Template test(@PathVariable("account") String account, @RequestParam("age") Integer age) {
+    public ResponseCtrl.Template test(@PathVariable("account") String account) {
         return ResponseCtrl.in((result) -> result.setData(userMapper.test(account)));
+    }
+
+    @ApiOperation(value = "userInfo")
+    @RequestMapping(value = "userInfo/{token}", method = RequestMethod.GET)
+    public ResponseCtrl.Template userInfo(@PathVariable("token") String token) {
+        return ResponseCtrl.in((result) -> result.setData(
+                RedisHelper.get(token)
+        ));
     }
 
 }
