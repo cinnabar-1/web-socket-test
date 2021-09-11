@@ -11,6 +11,9 @@ import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.Map;
 
 @RestController
 @Api(tags = "用户接口", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -52,6 +55,15 @@ public class ProviderController {
         return ResponseCtrl.in((result) -> result.setData(
                 RedisHelper.get(token)
         ));
+    }
+
+    @AuthToken
+    @ApiOperation(value = "form-data")
+    @RequestMapping(value = "/formData", method = RequestMethod.POST)
+    public ResponseCtrl.Template formData(@RequestPart("file") MultipartFile file,@RequestPart("form") String s) {
+        return ResponseCtrl.in((r) -> {
+            System.out.println(s);
+        });
     }
 
 }

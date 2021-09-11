@@ -35,8 +35,10 @@ public class AuthController {
 
     @GetMapping("/welcome")
     @AuthToken
-    public String Welcome() {
-        return "welcome TokenController ";
+    public ResponseCtrl.Template Welcome() {
+        return ResponseCtrl.in(response -> {
+            response.setData("welcome");
+        });
     }
 
 

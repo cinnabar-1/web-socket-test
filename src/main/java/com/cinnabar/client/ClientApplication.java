@@ -6,11 +6,13 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 @SpringBootApplication
 //@EnableEurekaClient
 @ComponentScan(basePackages = "com.cinnabar")
 //@EnableFeignClients
+//@EnableScheduling
 public class ClientApplication {
 
     public static void main(String[] args) {
