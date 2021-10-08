@@ -6,7 +6,6 @@ import javax.validation.constraints.NotNull;
 import java.io.DataOutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
 
@@ -22,9 +21,10 @@ public class HttpUtilsImpl implements HttpUtils {
 
     public static void main(String[] args) throws Exception {
 
-        Map map = (Map)JSONObject.parse("{\"projectId\":\"f68df7ca353e4f978ef202d6fe58cbdb\",\"filePath\":\"code\"}");
+        Map map = (Map) JSONObject.parse("{\"projectId\":\"f68df7ca353e4f978ef202d6fe58cbdb\",\"filePath\":\"code\"}");
         System.out.println(map);
         HttpUtilsImpl http = new HttpUtilsImpl();
+        http.sendGet("http://39.99.145.27:9090/welcome");
 
 /*        System.out.println("Testing 1 - Send Http GET request");
         http.sendGet("http://localhost:8080/welcome");
