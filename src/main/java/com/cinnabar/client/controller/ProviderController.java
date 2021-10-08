@@ -4,6 +4,7 @@ import com.cinnabar.client.beans.User;
 import com.cinnabar.client.config.Logback;
 import com.cinnabar.client.config.authToken.AuthToken;
 import com.cinnabar.client.config.handelResponse.ResponseCtrl;
+import com.cinnabar.client.config.handelResponse.ResponseTemplate;
 import com.cinnabar.client.config.redisHelper.RedisHelper;
 import com.cinnabar.client.mapper.UserMapper;
 import io.swagger.annotations.Api;
@@ -13,7 +14,7 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.Map;
+import java.util.List;
 
 @RestController
 @Api(tags = "用户接口", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -31,7 +32,7 @@ public class ProviderController {
 
     @ApiOperation(value = "return a url parameter")
     @PostMapping(value = "/{name}")
-    public ResponseCtrl.Template findName(@PathVariable("name") String name, @RequestParam("age") Integer age, @RequestBody User user) {
+    public ResponseTemplate<User> findName(@PathVariable("name") String name, @RequestParam("age") Integer age, @RequestBody User user) {
         return ResponseCtrl.in((result) -> {
             System.out.println(logback);
             if ("zhuzhao".equals(name)) {
@@ -43,15 +44,9 @@ public class ProviderController {
         });
     }
 
-    @ApiOperation(value = "test")
-    @RequestMapping(value = "/{account}", method = RequestMethod.GET)
-    public ResponseCtrl.Template test(@PathVariable("account") String account) {
-        return ResponseCtrl.in((result) -> result.setData(userMapper.test(account)));
-    }
-
     @ApiOperation(value = "userInfo")
     @RequestMapping(value = "userInfo/{token}", method = RequestMethod.GET)
-    public ResponseCtrl.Template userInfo(@PathVariable("token") String token) {
+    public ResponseTemplate<String> userInfo(@PathVariable("token") String token) {
         return ResponseCtrl.in((result) -> result.setData(
                 RedisHelper.get(token)
         ));
@@ -60,10 +55,18 @@ public class ProviderController {
     @AuthToken
     @ApiOperation(value = "form-data")
     @RequestMapping(value = "/formData", method = RequestMethod.POST)
-    public ResponseCtrl.Template formData(@RequestPart("file") MultipartFile file,@RequestPart("form") String s) {
+    public ResponseTemplate formData(@RequestPart("file") MultipartFile file, @RequestPart("form") String s) {
         return ResponseCtrl.in((r) -> {
             System.out.println(s);
         });
+    }
+
+    @ApiOperation(value = "userRelations")
+    @RequestMapping(value = "userRelations/{userId}", method = RequestMethod.GET)
+    public ResponseTemplate<List<User>> userRelations(@PathVariable("userId") Integer userId) {
+        return ResponseCtrl.in((result) -> result.setData(
+                userMapper.getUserRelations(userId)
+        ));
     }
 
 }

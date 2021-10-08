@@ -32,4 +32,9 @@ public class UserServiceImpl implements UserService {
         userMapper.insertIntoUser(users);
         return duplicateUser;
     }
+
+    @Override
+    public List<User> getUserRelationsList(Integer userId) {
+        return userMapper.getUserRelations(userId);
+    }
 }

@@ -16,6 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import redis.clients.jedis.Jedis;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -35,7 +36,7 @@ public class AuthController {
 
     @GetMapping("/welcome")
     @AuthToken
-    public ResponseCtrl.Template Welcome() {
+    public ResponseTemplate<String> Welcome() {
         return ResponseCtrl.in(response -> {
             response.setData("welcome");
         });
@@ -45,7 +46,7 @@ public class AuthController {
     @RequestMapping(value = "/login", method = RequestMethod.GET)
     @ApiOperation(value = "login")
     @AuthToken
-    public ResponseCtrl.Template Login(String account, String password) {
+    public ResponseTemplate<JSONObject> Login(String account, String password) {
         return ResponseCtrl.in(result -> {
             logger.info("用户名username为:" + account + "密码password为:" + password);
             User user = userMapper.getByUserAccount(account);
@@ -66,13 +67,13 @@ public class AuthController {
     @ApiOperation(value = "测试")
     public ResponseTemplate test() {
         logger.info("**************测试start**************");
-        return ResponseTemplate.builder().code(200).message("测试成功").data("测试数据").build();
+        return ResponseCtrl.in(r -> r.setData("success"));
     }
 
     @ApiOperation(value = "signIn")
     @PostMapping("/signIn")
     @AuthToken
-    public ResponseCtrl.Template sign(@RequestBody List<User> users) {
+    public ResponseTemplate sign(@RequestBody List<User> users) {
         return ResponseCtrl.in(r -> userService.insertUser(users));
     }
 
@@ -90,8 +91,10 @@ public class AuthController {
         String token = tokenGenerator.generate(account, password);
         // 将老的token key移除
         String oldToken = RedisHelper.get(account);
+        Jedis jedis = null;
         if (oldToken != null)
-            RedisHelper.getJedis().del(oldToken);
+            if ((jedis = RedisHelper.getJedis()) != null)
+                jedis.del(oldToken);
         List<RedisHelper.HelperSet> helperSets = new LinkedList<>();
         //将token和username以键值对的形式存入到redis中进行双向绑定
         //设置key过期时间，到期会自动删除

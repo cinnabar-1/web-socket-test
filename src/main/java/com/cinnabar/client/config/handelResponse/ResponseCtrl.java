@@ -1,5 +1,8 @@
 package com.cinnabar.client.config.handelResponse;
 
+import com.cinnabar.client.config.handelException.CommonException;
+import lombok.extern.log4j.Log4j2;
+
 /**
  * @author cinnabar-1
  * @version 1.0.0
@@ -7,53 +10,25 @@ package com.cinnabar.client.config.handelResponse;
  * @Description
  * @createTime 2020-11-18  13:09:00
  */
+@Log4j2
 public class ResponseCtrl {
 
-    private static Template Template = new Template();
-
-    public static class Template {
-        private Integer code;
-
-        private String message;
-
-        private Object data;
-
-        public Integer getCode() {
-            return code;
-        }
-
-        public void setCode(Integer code) {
-            this.code = code;
-        }
-
-        public String getMessage() {
-            return message;
-        }
-
-        public void setMessage(String message) {
-            this.message = message;
-        }
-
-        public Object getData() {
-            return data;
-        }
-
-        public void setData(Object data) {
-            this.data = data;
-        }
-    }
-
     /*稍微异常处理*/
-    public static Template in(Body body) {
+    public static <T> ResponseTemplate<T> in(Body<T> body) {
+        ResponseTemplate<T> respTemplate = new ResponseTemplate<>();
         try {
-            ResponseCtrl.Template.code = 200;
-            ResponseCtrl.Template.message = "success";
-            body.include(ResponseCtrl.Template);
+            respTemplate.setCode(200);
+            respTemplate.setMessage("success");
+            body.include(respTemplate);
+        } catch (CommonException c) {
+            log.debug("CommonException" + c);
+            respTemplate.setCode(202);
+            respTemplate.setMessage(c.getMessage());
         } catch (Exception e) {
-            ResponseCtrl.Template.code = 202;
-            ResponseCtrl.Template.message = e.getMessage();
+            log.debug("Exception" + e);
+            respTemplate.setCode(202);
+            respTemplate.setMessage(e.getMessage());
         }
-        System.out.println(Template.toString());
-        return Template;
+        return respTemplate;
     }
 }

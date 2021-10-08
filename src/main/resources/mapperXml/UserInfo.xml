@@ -33,4 +33,14 @@
         </foreach>
     </select>
 
+    <select id="getUserRelations" resultType="com.cinnabar.client.beans.User">
+        select *
+        from user_info
+        where id in (select if(user_from = #{userId}, user_to, user_from) as relations
+             from users_relations
+             where user_from = #{userId}
+                or user_to = #{userId}
+        );
+    </select>
+
 </mapper>

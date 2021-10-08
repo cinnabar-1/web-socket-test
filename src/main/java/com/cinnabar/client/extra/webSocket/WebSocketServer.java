@@ -6,10 +6,8 @@ import com.cinnabar.client.beans.Message;
 import com.cinnabar.client.common.util.SpringBeans;
 import com.cinnabar.client.config.redisHelper.RedisHelper;
 import com.cinnabar.client.service.MessageService;
-import org.apache.ibatis.annotations.Param;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 

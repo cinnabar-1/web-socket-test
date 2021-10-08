@@ -1,5 +1,5 @@
 let currentToken;
-const ip = "http://localhost:8080";
+const ip = "http://localhost:9090";
 const httpUrls = {
     login: (account, password) => {
         return {
