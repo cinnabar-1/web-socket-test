@@ -61,6 +61,7 @@ public class ProviderController {
         });
     }
 
+    //获取某个用户的所有关系人
     @ApiOperation(value = "userRelations")
     @RequestMapping(value = "userRelations/{userId}", method = RequestMethod.GET)
     public ResponseTemplate<List<User>> userRelations(@PathVariable("userId") Integer userId) {
