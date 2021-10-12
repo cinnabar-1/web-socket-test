@@ -24,7 +24,7 @@ import java.util.Map;
 @Component
 public class RedisHelper {
 
-    Logger log = LoggerFactory.getLogger(RedisHelper.class);
+    static Logger log = LoggerFactory.getLogger(RedisHelper.class);
 
     @Value(value = "${spring.redis.host}")
     public void setADDR(String ADDR) {
@@ -77,12 +77,13 @@ public class RedisHelper {
      */
     public static synchronized Jedis getJedis() {
         try {
-            if (jedisPool != null) {
-                return jedisPool.getResource();
-            } else {
+            if (jedisPool == null) {
                 init();
-                return jedisPool.getResource();
             }
+            log.info("jedis pool connect num: ");
+            log.info(String.valueOf(jedisPool.getNumIdle()));
+            log.info(String.valueOf(jedisPool.getNumIdle()));
+            return jedisPool.getResource();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -90,9 +91,16 @@ public class RedisHelper {
     }
 
     public static String get(String key) {
-        if (getJedis() == null)
-            return null;
-        return getJedis().get(key);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.get(key);
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.info("get jedis exception{}", e);
+        } finally {
+            jedis.close();
+        }
+        return null;
     }
 
     public static void set(String key, String value) {
