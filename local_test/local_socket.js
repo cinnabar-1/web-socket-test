@@ -49,7 +49,7 @@ function openSocket() {
 }
 
 function sendMessage() {
-    let toUserId = $("#toUserId");
+    let toUserId = userRelationsData[$("#list-selected")];
     let content = $("#contentText");
     if (typeof (WebSocket) == "undefined") {
         console.log("您的浏览器不支持WebSocket");

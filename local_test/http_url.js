@@ -12,5 +12,11 @@ const httpUrls = {
             url: `${ip}/user/userInfo/${token}`,
             dataType: "json"
         }
+    },
+    userRelations: (userId) => {
+        return {
+            url: `${ip}/user/userRelations/${userId}`,
+            dataType: "json"
+        }
     }
 };

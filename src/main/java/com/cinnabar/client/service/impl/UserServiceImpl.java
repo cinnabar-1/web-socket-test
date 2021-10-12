@@ -1,6 +1,7 @@
 package com.cinnabar.client.service.impl;
 
 import com.cinnabar.client.beans.User;
+import com.cinnabar.client.config.redisHelper.RedisHelper;
 import com.cinnabar.client.mapper.UserMapper;
 import com.cinnabar.client.service.UserService;
 import org.springframework.stereotype.Service;
@@ -36,5 +37,11 @@ public class UserServiceImpl implements UserService {
     @Override
     public List<User> getUserRelationsList(Integer userId) {
         return userMapper.getUserRelations(userId);
+    }
+
+    @Override
+    public User getUserByToken(String token) {
+        String account = RedisHelper.get(token);
+        return userMapper.getByUserAccount(account);
     }
 }

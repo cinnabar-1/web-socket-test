@@ -18,4 +18,6 @@ public interface UserService {
     List<User> insertUser(List<User> users);
 
     List<User> getUserRelationsList(Integer userId);
+
+    User getUserByToken(String token);
 }

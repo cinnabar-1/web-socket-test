@@ -7,6 +7,7 @@ import com.cinnabar.client.config.handelResponse.ResponseCtrl;
 import com.cinnabar.client.config.handelResponse.ResponseTemplate;
 import com.cinnabar.client.config.redisHelper.RedisHelper;
 import com.cinnabar.client.mapper.UserMapper;
+import com.cinnabar.client.service.UserService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +31,9 @@ public class ProviderController {
     @Autowired
     RedisHelper redisHelper;
 
+    @Autowired
+    UserService userService;
+
     @ApiOperation(value = "return a url parameter")
     @PostMapping(value = "/{name}")
     public ResponseTemplate<User> findName(@PathVariable("name") String name, @RequestParam("age") Integer age, @RequestBody User user) {
@@ -46,9 +50,9 @@ public class ProviderController {
 
     @ApiOperation(value = "userInfo")
     @RequestMapping(value = "userInfo/{token}", method = RequestMethod.GET)
-    public ResponseTemplate<String> userInfo(@PathVariable("token") String token) {
+    public ResponseTemplate<User> userInfo(@PathVariable("token") String token) {
         return ResponseCtrl.in((result) -> result.setData(
-                RedisHelper.get(token)
+                userService.getUserByToken(token)
         ));
     }
 

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="ts">
+<head>
+    <meta charset="utf-8">
+    <title>login</title>
+</head>
+<script type="text/javascript" src="likeList.js"></script>
+<script>
+
+</script>
+<body>
+<div class="list" id="list" onclick="stateChange(this)">
+    <p class="list-selected" id="list-selected">请点击选择</p>
+    <div id="inner-list" class="inner-list" hidden>
+    </div>
+</div>
+<style>
+    div.list {
+        min-width: 50px;
+        max-width: 100px;
+    }
+
+    div.inner-list {
+        margin-top: 8px;
+        min-width: 50px;
+        min-height: 20px;
+        max-width: 100px;
+    }
+
+    p.list-selected {
+        margin-bottom: 0;
+        cursor: pointer;
+        border: 1px solid #ccc;
+        border-radius: 16px;
+        text-align: center;
+        min-width: 50px;
+        max-width: 100px;
+        min-height: 15px;
+    }
+
+    p.list-select-item {
+        margin: 5px;
+        cursor: pointer;
+        border: 1px solid #ccc;
+        text-align: center;
+        min-width: 50px;
+        min-height: 15px;
+        max-width: 100px;
+    }
+</style>
+</body>
+</html>
