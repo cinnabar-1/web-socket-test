@@ -3,9 +3,10 @@ spring:
 
   # redis
   redis:
-    host: 39.99.145.27
+#    host: 39.99.145.27
     port: 6379
     password:
+    host: localhost
 
   datasource:
     url: jdbc:mysql://39.99.145.27:3306/baseinfo

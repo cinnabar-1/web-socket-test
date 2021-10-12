@@ -85,11 +85,13 @@ public class RedisHelper {
             }
         } catch (Exception e) {
             e.printStackTrace();
-            return null;
         }
+        return null;
     }
 
     public static String get(String key) {
+        if (getJedis() == null)
+            return null;
         return getJedis().get(key);
     }
 
