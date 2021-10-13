@@ -91,13 +91,8 @@ public class AuthController {
         String token = tokenGenerator.generate(account, password);
         // 将老的token key移除
         String oldToken = RedisHelper.get(account);
-        Jedis jedis = null;
         if (oldToken != null)
-            if ((jedis = RedisHelper.getJedis()) != null)
-            {
-                jedis.del(oldToken);
-                jedis.close();
-            }
+            RedisHelper.del(oldToken);
         List<RedisHelper.HelperSet> helperSets = new LinkedList<>();
         //将token和username以键值对的形式存入到redis中进行双向绑定
         //设置key过期时间，到期会自动删除

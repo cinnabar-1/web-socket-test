@@ -49,14 +49,14 @@ function openSocket() {
 }
 
 function sendMessage() {
-    let toUserId = userRelationsData[$("#list-selected")];
+    let toUser = selectedItem.account;
     let content = $("#contentText");
     if (typeof (WebSocket) == "undefined") {
         console.log("您的浏览器不支持WebSocket");
     } else {
         console.log("您的浏览器支持WebSocket");
-        console.log('{"toUserId":"' + toUserId.val() + '","contentText":"' + content.val() + '"}');
-        socket.send('{"toUserId":"' + toUserId.val() + '","contentText":"' + content.val() + '"}');
+        console.log('{"toUser":"' + toUser + '","contentText":"' + content.val() + '"}');
+        socket.send('{"toUser":"' + toUser+ '","contentText":"' + content.val() + '"}');
     }
 }
 

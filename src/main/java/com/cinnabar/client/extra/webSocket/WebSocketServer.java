@@ -3,6 +3,7 @@ package com.cinnabar.client.extra.webSocket;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.cinnabar.client.beans.Message;
+import com.cinnabar.client.beans.User;
 import com.cinnabar.client.common.util.SpringBeans;
 import com.cinnabar.client.config.redisHelper.RedisHelper;
 import com.cinnabar.client.service.MessageService;
@@ -53,7 +54,8 @@ public class WebSocketServer {
     /**
      * 接收userId
      */
-    private String userId = "";
+    private String account = "";
+    private Integer userId = 0;
     private String token = "";
 
     /**
@@ -63,32 +65,33 @@ public class WebSocketServer {
     public void onOpen(Session session, @PathParam("account") String account, @PathParam("token") String token) {
         if (account != null && account.equals(RedisHelper.get(token))) {
             this.session = session;
-            this.userId = account;
-            if (webSocketMap.containsKey(userId)) {
-                webSocketMap.remove(userId);
-                webSocketMap.put(userId, this);
+            this.account = account;
+            this.userId = messageService.getUserByAccount(account).getId();
+            if (webSocketMap.containsKey(this.account)) {
+                webSocketMap.remove(this.account);
+                webSocketMap.put(this.account, this);
                 //加入set中
             } else {
-                webSocketMap.put(userId, this);
+                webSocketMap.put(this.account, this);
                 //加入set中
                 addOnlineCount();
                 //在线数加1
             }
-            log.info("用户连接:" + userId + ",当前在线人数为:" + getOnlineCount());
+            log.info("用户连接:" + this.account + ",当前在线人数为:" + getOnlineCount());
             try {
-                List<Message> delayMessage = messageService.getDelayMessage(userId);
+                List<Message> delayMessage = messageService.getDelayMessage(this.userId);
                 sendMessage("连接成功");
                 if (delayMessage.size() > 0)
-                    sendMessage(JSONObject.toJSONString(delayMessage));
-                messageService.deleteDelayMessage(userId);
+                    this.session.getBasicRemote().sendText(JSONObject.toJSONString(delayMessage));
+                messageService.deleteDelayMessage(this.userId);
             } catch (IOException e) {
-                log.error("用户:" + userId + ",网络异常!!!!!!");
+                log.error("用户:" + this.account + ",网络异常!!!!!!");
             }
         } else {
             try {
                 session.getBasicRemote().sendText("{\"login\":\"need\"}");
             } catch (IOException e) {
-                log.error("用户:" + userId + ",网络异常!!!!!!");
+                log.error("用户:" + this.account + ",网络异常!!!!!!");
             }
         }
     }
@@ -98,12 +101,12 @@ public class WebSocketServer {
      */
     @OnClose
     public void onClose() {
-        if (webSocketMap.containsKey(userId)) {
-            webSocketMap.remove(userId);
+        if (webSocketMap.containsKey(account)) {
+            webSocketMap.remove(account);
             //从set中删除
             subOnlineCount();
         }
-        log.info("用户退出:" + userId + ",当前在线人数为:" + getOnlineCount());
+        log.info("用户退出:" + account + ",当前在线人数为:" + getOnlineCount());
     }
 
     /**
@@ -113,7 +116,7 @@ public class WebSocketServer {
      */
     @OnMessage
     public void onMessage(String message, Session session) {
-        log.info("用户:" + userId + ", 报文:" + message);
+        log.info("用户:" + account + ", 报文:" + message);
         //可以群发消息
         //消息保存到数据库、redis
         if (!StringUtils.isEmpty(message)) {
@@ -121,24 +124,25 @@ public class WebSocketServer {
                 //解析发送的报文
                 JSONObject jsonObject = JSON.parseObject(message);
                 //追加发送人(防止串改)
-                jsonObject.put("fromUserId", this.userId);
-                String toUserId = jsonObject.getString("toUserId");
+                jsonObject.put("fromUser", this.account);
+                String toUserAccount = jsonObject.getString("toUser");
                 //传送给对应toUserId用户的websocket
-                if (!StringUtils.isEmpty(toUserId) && webSocketMap.containsKey(toUserId)) {
-                    webSocketMap.get(toUserId).sendMessage(jsonObject.toJSONString());
+                if (!StringUtils.isEmpty(toUserAccount) && webSocketMap.containsKey(toUserAccount)) {
+                    webSocketMap.get(toUserAccount).sendMessage(jsonObject);
                 } else {
-                    String errMessage = "用户[" + toUserId + "]不在线，在线时会将信息发送";
+                    String errMessage = "用户[" + toUserAccount + "]不在线，在线时会将信息发送";
                     log.info(errMessage);
-                    this.session.getBasicRemote().sendText(errMessage);
+                    sendMessage(errMessage);
                     //否则不在这个服务器上，发送到mysql或者redis
                     // 先存redis，最后一起存数据库
+                    User toUser = messageService.getUserByAccount(toUserAccount);
                     List<Message> messages = new LinkedList<>();
                     Message messageEntity = new Message();
                     SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yy-MM-dd HH:mm:ss");
                     messageEntity.setDateTime(simpleDateFormat.format(new Date()));
                     messageEntity.setMessage(message);
-                    messageEntity.setUserId(this.userId);
-                    messageEntity.setToUserId(toUserId);
+                    messageEntity.setUserId(userId);
+                    messageEntity.setToUserId(toUser.getId());
                     messages.add(messageEntity);
                     messageService.saveDelayMessage(messages);
                 }
@@ -154,7 +158,7 @@ public class WebSocketServer {
      */
     @OnError
     public void onError(Session session, Throwable error) {
-        log.error("用户错误:" + this.userId + ",原因:" + error.getMessage());
+        log.error("用户错误:" + this.account + ",原因:" + error.getMessage());
         error.printStackTrace();
     }
 
@@ -164,6 +168,10 @@ public class WebSocketServer {
     public void sendMessage(String message) throws IOException {
         String data = "{\"data\":\"" + message + "\"}";
         this.session.getBasicRemote().sendText(data);
+    }
+
+    public void sendMessage(JSONObject message) throws IOException {
+        this.session.getBasicRemote().sendText(message.toJSONString());
     }
 
 

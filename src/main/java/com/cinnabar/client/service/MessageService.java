@@ -1,6 +1,7 @@
 package com.cinnabar.client.service;
 
 import com.cinnabar.client.beans.Message;
+import com.cinnabar.client.beans.User;
 import io.swagger.models.auth.In;
 
 import java.util.List;
@@ -15,7 +16,9 @@ import java.util.List;
 public interface MessageService {
     Integer saveDelayMessage(List<Message> messages);
 
-    List<Message> getDelayMessage(String toUserId);
+    List<Message> getDelayMessage(Integer toUserId);
 
-    void deleteDelayMessage(String toUserId);
+    void deleteDelayMessage(Integer toUserId);
+
+    User getUserByAccount(String account);
 }

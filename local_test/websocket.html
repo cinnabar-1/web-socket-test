@@ -25,7 +25,6 @@
     function stateChange(doo) {
         if (!haveRelationsData) {
             httpUtils.get(httpUrls.userRelations(userInfo.id)).then((r) => {
-                debugger
                 userRelationsData = r.data;
                 initList();
             });
@@ -64,7 +63,7 @@
 <p>【toUserId】：
 <!--<div><label for="toUserId"></label><input id="toUserId" name="toUserId" type="text" value="20"></div>-->
 <div id="likeList"></div>
-<p>【toUserId】：
+<p>【content】：
 <div><label for="contentText"></label><input id="contentText" name="contentText" type="text" value="hello websocket">
 </div>
 

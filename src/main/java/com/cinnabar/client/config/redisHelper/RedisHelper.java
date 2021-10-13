@@ -24,7 +24,7 @@ import java.util.Map;
 @Component
 public class RedisHelper {
 
-    static Logger log = LoggerFactory.getLogger(RedisHelper.class);
+    private static Logger log = LoggerFactory.getLogger(RedisHelper.class);
 
     @Value(value = "${spring.redis.host}")
     public void setADDR(String ADDR) {
@@ -80,9 +80,7 @@ public class RedisHelper {
             if (jedisPool == null) {
                 init();
             }
-            log.info("jedis pool connect num: ");
-            log.info(String.valueOf(jedisPool.getNumIdle()));
-            log.info(String.valueOf(jedisPool.getNumIdle()));
+            log.info("jedis pool connect num: {}", jedisPool.getNumActive());
             return jedisPool.getResource();
         } catch (Exception e) {
             e.printStackTrace();
@@ -91,14 +89,15 @@ public class RedisHelper {
     }
 
     public static String get(String key) {
-        Jedis jedis = getJedis();
-        try {
-            return jedis.get(key);
-        } catch (Exception e) {
-            e.printStackTrace();
-            log.info("get jedis exception{}", e);
-        } finally {
-            jedis.close();
+        Jedis jedis;
+        if ((jedis = RedisHelper.getJedis()) != null) {
+            try {
+                return jedis.get(key);
+            } catch (Exception e) {
+                log.info("jedis get exception: {}", e.getMessage());
+            } finally {
+                jedis.close();
+            }
         }
         return null;
     }
@@ -108,14 +107,34 @@ public class RedisHelper {
     }
 
     public static void set(String key, String value, int expiredTime) {
-        Jedis jedis = getJedis();
-        if (expiredTime < 1) {
-            jedis.set(key, value);
-        } else {
-            jedis.set(key, value);
-            jedis.expire(key, expiredTime);
+        Jedis jedis;
+        if ((jedis = RedisHelper.getJedis()) != null) {
+            try {
+                if (expiredTime < 1) {
+                    jedis.set(key, value);
+                } else {
+                    jedis.set(key, value);
+                    jedis.expire(key, expiredTime);
+                }
+            } catch (Exception e) {
+                log.info("jedis set exception: {}", e.getMessage());
+            } finally {
+                jedis.close();
+            }
         }
-        jedis.close();
+    }
+
+    public static void del(String key) {
+        Jedis jedis;
+        if ((jedis = RedisHelper.getJedis()) != null) {
+            try {
+                jedis.del(key);
+            } catch (Exception e) {
+                log.info("jedis del exception: {}", e.getMessage());
+            } finally {
+                jedis.close();
+            }
+        }
     }
 
     public static void expire(String key, int expiredTime) {
@@ -135,6 +154,7 @@ public class RedisHelper {
             }
             //通过读取所有响应来同步管道。此操作将关闭管道。为了从流水线命令获取返回值，请捕获所执行命令的不同Response <？>。
             pip.sync();
+            jedis.close();
             return redisValueMap;
         } else {
             throw new CommonException("redis init failed");
@@ -154,6 +174,7 @@ public class RedisHelper {
                     pip.expire(set.getKey(), set.getExpiredTime());
             }
             pip.sync();// 同步获取所有的回应
+            jedis.close();
         } else {
             throw new CommonException("redis init failed");
         }

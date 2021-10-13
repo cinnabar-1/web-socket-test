@@ -18,7 +18,7 @@ import java.util.List;
 public interface MessageMapper {
     Integer saveMessage(List<Message> list);
 
-    List<Message> getDelayMessage(String toUserId);
+    List<Message> getDelayMessage(Integer toUserId);
 
-    void deleteDelayMessage(String toUserId);
+    void deleteDelayMessage(Integer toUserId);
 }
