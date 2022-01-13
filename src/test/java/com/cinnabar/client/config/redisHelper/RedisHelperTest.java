@@ -16,7 +16,7 @@ import java.util.*;
  * @Description
  * @createTime 2021-07-12  13:26:00
  */
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+//@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 //@RunWith(SpringRunner.class)
 //@WebAppConfiguration
 class RedisHelperTest {
@@ -36,9 +36,5 @@ class RedisHelperTest {
                 map.keySet()) {
             System.out.println(map.get(s).get());
         }
-    }
-
-    @Test
-    void getValue() {
     }
 }

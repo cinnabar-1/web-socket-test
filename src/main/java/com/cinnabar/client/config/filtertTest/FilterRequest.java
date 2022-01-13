@@ -1,5 +1,6 @@
 package com.cinnabar.client.config.filtertTest;
 
+
 import org.springframework.core.annotation.Order;
 
 import javax.servlet.*;
@@ -8,28 +9,18 @@ import java.io.IOException;
 /**
  * @author cinnabar-1
  * @version 1.0.0
- * @ClassName FilterTest.java
+ * @ClassName FilterRequest.java
  * @Description
- * @createTime 2021-07-09  14:50:00
+ * @createTime 2021-11-03  11:14:00
  */
-@Order(2)
-public class FilterTest implements Filter {
-
-    @Override
+@Order(1)
+public class FilterRequest implements Filter {
     public void init(FilterConfig filterConfig) throws ServletException {
-        System.out.println("init阶段");
+        System.out.println("init FilterRequest阶段");
     }
-
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
-        long start2 = System.currentTimeMillis();
+        System.out.println("another filter");
         filterChain.doFilter(servletRequest, servletResponse);
-        long time = System.currentTimeMillis() - start2;
-        System.out.println("filter Test： " + time);
-    }
-
-    @Override
-    public void destroy() {
-        System.out.println("过滤器销毁了");
     }
 }

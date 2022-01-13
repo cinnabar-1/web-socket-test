@@ -1,10 +1,8 @@
 package com.cinnabar.client.mapper;
 
 import com.cinnabar.client.beans.User;
-import io.swagger.models.auth.In;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
-import org.apache.ibatis.annotations.Select;
 import org.springframework.stereotype.Component;
 
 import java.util.List;

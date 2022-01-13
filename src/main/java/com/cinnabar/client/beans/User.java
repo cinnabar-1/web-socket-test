@@ -32,5 +32,23 @@ public class User {
     private String email;
 
     private String comment;
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "id=" + id +
+                ", account='" + account + '\'' +
+                ", password='" + password + '\'' +
+                ", surname='" + surname + '\'' +
+                ", name='" + name + '\'' +
+                ", nickName='" + nickName + '\'' +
+                ", gender='" + gender + '\'' +
+                ", age=" + age +
+                ", nick_name='" + nick_name + '\'' +
+                ", birthday='" + birthday + '\'' +
+                ", email='" + email + '\'' +
+                ", comment='" + comment + '\'' +
+                '}';
+    }
 }
 

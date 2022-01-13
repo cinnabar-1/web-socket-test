@@ -1,6 +1,7 @@
 package com.cinnabar.client.mapper;
 
 import com.cinnabar.client.beans.Message;
+import com.cinnabar.client.beans.User;
 import org.apache.ibatis.annotations.Mapper;
 import org.springframework.stereotype.Component;
 
@@ -21,4 +22,6 @@ public interface MessageMapper {
     List<Message> getDelayMessage(Integer toUserId);
 
     void deleteDelayMessage(Integer toUserId);
+
+    List<User> selectUser();
 }

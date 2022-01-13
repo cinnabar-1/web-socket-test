@@ -24,4 +24,8 @@
         delete from cache_message where to_user_id = #{toUserId}
     </delete>
 
+    <select id="selectUser" resultType="com.cinnabar.client.beans.User">
+        select * from user_info
+    </select>
+
 </mapper>

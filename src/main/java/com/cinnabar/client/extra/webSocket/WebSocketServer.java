@@ -4,7 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.cinnabar.client.beans.Message;
 import com.cinnabar.client.beans.User;
-import com.cinnabar.client.common.util.SpringBeans;
+import com.cinnabar.client.common.util.bean.SpringBeans;
 import com.cinnabar.client.config.redisHelper.RedisHelper;
 import com.cinnabar.client.service.MessageService;
 import org.slf4j.Logger;
